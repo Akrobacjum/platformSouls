@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Material ElfStopMaterial;
 
     float speed;
+    bool previousGroundCheck;
     public bool right = true;
     float jumpCount;
 
@@ -70,6 +71,7 @@ public class PlayerController : MonoBehaviour
         }
         Flip();
         Animate();
+        previousGroundCheck = GroundCheckBox();
 
     }
     void Move()
@@ -78,7 +80,6 @@ public class PlayerController : MonoBehaviour
         {
             speed = speed + (maxSpeed * Time.deltaTime * acceleration);
             speed = Mathf.Clamp(speed, 0, maxSpeed);
-            Debug.Log("Speed =" + speed);
             dirX = Input.GetAxisRaw("Horizontal");
             float rigVY = rigBody2D.velocity.y;
             rigBody2D.velocity = new Vector2(dirX * speed, rigVY);
@@ -90,6 +91,7 @@ public class PlayerController : MonoBehaviour
             float rigVY = rigBody2D.velocity.y;
             rigBody2D.velocity = new Vector2(dirX * walkSpeed, rigVY);
         }
+        animator.SetBool("Input", dirX != 0);
     }
     void Flip()
     {
@@ -109,12 +111,16 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetButtonDown("Jump") && jumpCount < maxJumpCount)
         {
-
-            currentJumpTime += Time.deltaTime;
-            float rigVX = rigBody2D.velocity.x;
-            rigBody2D.velocity = new Vector2(rigVX, jumpForce);
-            jumpCount++;
+            animator.SetTrigger("Jump");
         }
+    }
+    public void JumpForce()
+    {
+        currentJumpTime += Time.deltaTime;
+        float rigVX = rigBody2D.velocity.x;
+        rigBody2D.velocity = new Vector2(rigVX, jumpForce);
+        jumpCount++;
+        Debug.Log("dsadsa");
     }
     bool GroundCheckBox()
     {
@@ -123,16 +129,14 @@ public class PlayerController : MonoBehaviour
     }
     void Animate()
     {
-        animator.SetFloat("Speed", Mathf.Abs(rigBody2D.velocity.x));
-        if (Mathf.Abs(rigBody2D.velocity.y) > 0.2)
+        animator.SetFloat("Speed", Mathf.Abs(rigBody2D.velocity.x));  
+        if (previousGroundCheck == false && GroundCheckBox())
         {
-            animator.SetBool("Jump", true);
+            animator.SetTrigger("Stop");
         }
-        else if (GroundCheckBox())
+        else if (previousGroundCheck == true && GroundCheckBox())
         {
-            animator.SetBool("Jump", false);
-            Debug.Log("Coœ ciekawego");
+            animator.ResetTrigger("Stop");
         }
-        
     }
 }
