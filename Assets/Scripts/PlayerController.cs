@@ -131,6 +131,7 @@ public class PlayerController : MonoBehaviour
         else if (GroundCheckBox())
         {
             animator.SetBool("Jump", false);
+            Debug.Log("Coœ ciekawego");
         }
         
     }
