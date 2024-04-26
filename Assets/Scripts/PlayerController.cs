@@ -137,6 +137,7 @@ public class PlayerController : MonoBehaviour
         else if (previousGroundCheck == true && GroundCheckBox())
         {
             animator.ResetTrigger("Stop");
+            Debug.Log("nice");
         }
     }
 }
