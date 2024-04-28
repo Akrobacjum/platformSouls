@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject Player;
     void Start()
     {
+        //Does nothing at this point.
         if (manager == null)
         {
             manager = this;

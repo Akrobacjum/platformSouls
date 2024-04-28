@@ -1,19 +1,22 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.MemoryMappedFiles;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
+//To solve: GroundCheckBox() always returning false.
 public class PlayerController : MonoBehaviour
 {
-    Rigidbody2D rigBody2D;
+    PlayerAnimator PlayerAnimator;
+    Stats Stats;
+
+    public Rigidbody2D rigBody2D;
     Collider2D collider;
 
-    Animator animator;
-    MeshRenderer renderer;
-
-    float dirX;
+    public float dirX;
 
     public LayerMask groundMask;
     public Transform Spawn;
@@ -22,122 +25,102 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float maxSpeed;
     [SerializeField] float acceleration;
     [SerializeField] float jumpForce;
-    [SerializeField] float maxJumpCount;
 
-    [SerializeField] Material ElfIdleMaterial;
-    [SerializeField] Material ElfWalkMaterial;
-    [SerializeField] Material ElfRunMaterial;
-    [SerializeField] Material ElfJumpMaterial;
-    [SerializeField] Material ElfStopMaterial;
-
-    float speed;
-    bool previousGroundCheck;
+    public float speed;
     public bool right = true;
-    float jumpCount;
+    public float jumpCount;
+    public float maxJumpCount;
+    public bool previousGroundCheck;
 
     private float minJumpTime = 0.3f;
     private float currentJumpTime;
     void Start()
     {
+        PlayerAnimator = GetComponent<PlayerAnimator>();
+        Stats = GetComponent<Stats>();
+
         rigBody2D = GetComponent<Rigidbody2D>();
         collider = GetComponent<Collider2D>();
-
-        animator = GetComponent<Animator>();
-        renderer = GetComponent<MeshRenderer>();
 
         jumpCount = 0f;
         currentJumpTime = 0f;
 
         rigBody2D.MovePosition(Spawn.position);
+
+        Stats.staminaRegen = false;
     }
     void Update()
     {
         Move();
+        //No fucking idea.
         if (currentJumpTime <= 0)
         {
+            //Checks if there is ground beneath player.
             if (GroundCheckBox())
             {
+                Debug.Log("GroundCheckBox: " + GroundCheckBox());
                 jumpCount = 0f;
             }
-            Jump();
+            //Sets triggers for stop animation while jumping. Uses JumpForce() through animation event.
+            PlayerAnimator.Jump();
         }
         else
         {
+            //Calculates jump time.
             currentJumpTime += Time.deltaTime;
             if (currentJumpTime >= minJumpTime)
             {
                 currentJumpTime = 0;
             }
         }
-        Flip();
-        Animate();
+        //Checks if there was ground beneath player in previous frame. For JumpAnimator() and stop animation.
         previousGroundCheck = GroundCheckBox();
-
     }
     void Move()
     {
-        if (Input.GetButton("Fire1"))
+        //Reads horizontal input and sets it as direction.
+        dirX = Input.GetAxisRaw("Horizontal");
+        //Checks if player tries to run and if he has enough stamina.
+        if (Input.GetButton("Run") && Stats.stamina >= 2)
         {
+            //Checks if there is already an existing stamina running coroutine.
+            if (Stats.staminaRun == false)
+            {
+                StartCoroutine(Stats.StaminaRun());
+            }
+            //Calculates acceleration. Restricts actual speed to speed limit.
             speed = speed + (maxSpeed * Time.deltaTime * acceleration);
             speed = Mathf.Clamp(speed, 0, maxSpeed);
-            dirX = Input.GetAxisRaw("Horizontal");
+            //Calculates running speed.
             float rigVY = rigBody2D.velocity.y;
             rigBody2D.velocity = new Vector2(dirX * speed, rigVY);
         }
         else
         {
+            //Checks if there is already an existing stamina regeneration running coroutine.
+            if (Stats.staminaRegen == false)
+            {
+                StartCoroutine(Stats.StaminaRegen());
+            }
             speed = walkSpeed;
-            dirX = Input.GetAxisRaw("Horizontal");
+            //Calculates walking speed.
             float rigVY = rigBody2D.velocity.y;
             rigBody2D.velocity = new Vector2(dirX * walkSpeed, rigVY);
-        }
-        animator.SetBool("Input", dirX != 0);
-    }
-    void Flip()
-    {
-        if (dirX < 0 && right)
-        {
-            transform.eulerAngles = new Vector3(0, 180, 0);
-            right = false;
-        }
-        if (dirX > 0 && !right)
-        {
-            transform.eulerAngles = new Vector3(0, 0, 0);
-            right = true;
-        }
-    }
 
-    void Jump()
-    {
-        if (Input.GetButtonDown("Jump") && jumpCount < maxJumpCount)
-        {
-            animator.SetTrigger("Jump");
         }
     }
     public void JumpForce()
     {
+        //Sets jump force. Used through PlayerAnimator in animation event.
         currentJumpTime += Time.deltaTime;
         float rigVX = rigBody2D.velocity.x;
         rigBody2D.velocity = new Vector2(rigVX, jumpForce);
         jumpCount++;
-        Debug.Log("dsadsa");
     }
-    bool GroundCheckBox()
+    public bool GroundCheckBox()
     {
+        //Checks if there is ground beneath player.
         Vector3 orginVector = new Vector3(collider.bounds.size.x - 0.5f, collider.bounds.size.y, collider.bounds.size.z);
         return Physics2D.BoxCast(collider.bounds.center, orginVector, 0f, Vector2.down, 0.1f, groundMask);
-    }
-    void Animate()
-    {
-        animator.SetFloat("Speed", Mathf.Abs(rigBody2D.velocity.x));  
-        if (previousGroundCheck == false && GroundCheckBox())
-        {
-            animator.SetTrigger("Stop");
-        }
-        else if (previousGroundCheck == true && GroundCheckBox())
-        {
-            animator.ResetTrigger("Stop");
-            Debug.Log("nice");
-        }
     }
 }
