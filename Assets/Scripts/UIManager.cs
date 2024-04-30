@@ -92,12 +92,6 @@ public class UIManager : MonoBehaviour
             MapSubmenuActive = false;
         }
     }
-    public void OnClickFirecamp()
-    {
-        //Currently displays log. Made to teleport player to firecamp in the future.
-        Debug.Log("Firecamp: Teleport");
-        Resume();
-    }
     public void OnClickChangeScene(int sceneNumberInBuildSetting)
     {
         //Changes scene.

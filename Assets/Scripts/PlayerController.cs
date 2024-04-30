@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 public class PlayerController : MonoBehaviour
 {
     PlayerAnimator PlayerAnimator;
-    Stats Stats;
+    public Stats Stats;
 
     public Rigidbody2D rigBody2D;
     Collider2D collider;
@@ -58,7 +58,6 @@ public class PlayerController : MonoBehaviour
             //Checks if there is ground beneath player.
             if (GroundCheckBox())
             {
-                Debug.Log("GroundCheckBox: " + GroundCheckBox());
                 jumpCount = 0f;
             }
             //Sets triggers for stop animation while jumping. Uses JumpForce() through animation event.
@@ -120,7 +119,7 @@ public class PlayerController : MonoBehaviour
     public bool GroundCheckBox()
     {
         //Checks if there is ground beneath player.
-        Vector3 orginVector = new Vector3(collider.bounds.size.x - 0.5f, collider.bounds.size.y, collider.bounds.size.z);
+        Vector2 orginVector = new Vector3(collider.bounds.size.x, collider.bounds.size.y, collider.bounds.size.z);
         return Physics2D.BoxCast(collider.bounds.center, orginVector, 0f, Vector2.down, 0.1f, groundMask);
     }
 }

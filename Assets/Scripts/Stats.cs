@@ -11,6 +11,7 @@ public class Stats : MonoBehaviour
     public float stamina;
     public float staminaMax;
     public int staminaRegenPerSec;
+    public int staminaRunPerSec;
 
     public bool staminaRegen;
     public bool staminaRun;
@@ -44,10 +45,10 @@ public class Stats : MonoBehaviour
         {
             staminaRun = false;
         }
-        stamina = stamina + staminaRegenPerSec;
+        stamina = stamina + staminaRegenPerSec * Time.deltaTime;
         StatsCheck();
-        Debug.Log("Entity Stamina: " + stamina);
-        yield return new WaitForSeconds(1f);
+        //Debug.Log("Entity Stamina: " + stamina);
+        yield return null;
         staminaRegen = false;
     }
     public IEnumerator StaminaRun()
@@ -55,10 +56,10 @@ public class Stats : MonoBehaviour
         //Decreases stamina, checks if stamina number is correct and waits for one second before allowing next stamina run coroutine. Turns off stamina regen coroutine.
         StopCoroutine(StaminaRegen());
         staminaRun = true;
-        stamina = stamina -2;
+        stamina = stamina - staminaRunPerSec * Time.deltaTime;
         StatsCheck();
-        Debug.Log("Entity Stamina: " + stamina);
-        yield return new WaitForSeconds(1f);
+        //Debug.Log("Entity Stamina: " + stamina);
+        yield return null; ;
         staminaRun = false;
     }
     void EntitySlay()
